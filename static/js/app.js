@@ -1,37 +1,44 @@
-var app = angular.module("library", [ "ngRoute" ]);
-app.config(function($routeProvider) {
-    $routeProvider
-        .when("/", {
+var app = angular.module("library", [ "ui.router" ]);
+app.config(function($stateProvider) {
+    $stateProvider
+        .state("/", {
+            url: "/",
             templateUrl: "/static/partials/home.html"
         })
-        .when("/listBooks", {
+        .state("/listBooks", {
+            url: "/listBooks",
             templateUrl: "/static/partials/listBooks.html",
             controller: "bookController"
         })
-        .when("/userSettings", {
+        .state("/userSettings", {
+            url: "/userSettings",
             templateUrl: "/static/partials/userSettings.html",
             controller: "userController"
         })
-        .when("/addAuthor", {
+        .state("/addAuthor", {
+            url: "/addAuthor",
             templateUrl: "/static/partials/addAuthor.html",
             controller: "authorController"
         })
-        .when("/addBook", {
+        .state("/addBook", {
+            url: "/addBook",
             templateUrl: "/static/partials/addBook.html",
             controller: "bookController"
         })
-        .when("/addBookInstance", {
+        .state("/addBookInstance", {
+            url: "/addBookInstance",
             templateUrl: "/static/partials/addBookInstance.html",
             controller: "bookController"
         })
-        .when("/manageRentals", {
+        .state("/manageRentals", {
+            url: "/manageRentals",
             templateUrl: "/static/partials/manageRentals.html",
             controller: "bookController"
         })
 });
-app.controller("mainController", function($scope, $rootScope, $http, $location) {
+app.controller("mainController", function($scope, $rootScope, $http, $stateParams) {
     $rootScope.loginUser = {};
-    $rootScope.$on("$routeChangeStart", function(event, next, current) {
+    $rootScope.$on("$stateChangeStart", function(event, next, current) {
         $http.get("/user").then(function(response) {
             $rootScope.user = angular.copy(response.data);
             console.log($rootScope.user)
@@ -40,11 +47,11 @@ app.controller("mainController", function($scope, $rootScope, $http, $location) 
             }
         });
         if ($rootScope.user === undefined && next.originalPath !== "/" && next.originalPath !== "/login") {
-            $location.path("/");
+            event.preventDefault();
         }
     });
 });
-app.controller("userController", function($scope, $rootScope, $http, $location) {
+app.controller("userController", function($scope, $rootScope, $http, $state) {
     $scope.incorrect = false;
     $scope.login = function() {
         $http.post("/login", $rootScope.loginUser).then(
@@ -58,7 +65,7 @@ app.controller("userController", function($scope, $rootScope, $http, $location) 
                         $rootScope.user = undefined;
                     }
                     $rootScope.loginUser = {};
-                    $location.path("/");
+                    $state.go("/")
                 }
             },
             function(response) {
@@ -73,12 +80,12 @@ app.controller("userController", function($scope, $rootScope, $http, $location) 
         $http.post("/logout").then(
             function(response) {
                 $scope.statusCode = response.status;
-                $location.path("/");
             },
             function(response) {
                 $scope.statusCode = response.status;
             }
         );
+        $state.go("/")
         $rootScope.user = undefined;
     };
     $scope.settings = function () {
